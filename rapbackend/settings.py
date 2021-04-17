@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/3.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -71,6 +72,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rapbackend.wsgi.application'
 
+DATA_UPLOAD_MAX_NUMBER_FIELDS = 100000
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
@@ -114,6 +116,49 @@ USE_I18N = True
 USE_L10N = True
 
 USE_TZ = True
+
+
+# Log Conf
+if not os.path.exists('log'):
+    os.makedirs('log')
+
+APP_LOG_FILENAME = os.path.join(BASE_DIR, 'log/app.log')
+
+LOGFILE_SIZE = 20 * 1024 * 1024
+LOGFILE_COUNT = 5
+LOGFILE_APP = 'InaamApp'
+
+LOGGING = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'standard': {
+            'format' : "[%(asctime)s] %(levelname)s [%(filename)s:%(lineno)s] %(message)s",
+            'datefmt' : "%d-%b-%Y %H:%M:%S"
+        }
+    },
+    'handlers': {
+        'console': {
+            'level': 'INFO',
+            'class': 'logging.StreamHandler'
+        },
+        'applog': {
+            'level':'INFO',
+            'class':'logging.handlers.RotatingFileHandler',
+            'filename': APP_LOG_FILENAME,
+            'maxBytes': LOGFILE_SIZE,
+            'backupCount': LOGFILE_COUNT,
+            'formatter': 'standard',
+        }
+    },
+    'loggers': {
+        LOGFILE_APP: {
+            'handlers': ['applog'],
+            'level': 'INFO',
+            'propagate': True,
+        }
+    }
+}
 
 
 # Static files (CSS, JavaScript, Images)
