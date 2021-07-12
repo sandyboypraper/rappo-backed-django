@@ -1,0 +1,38 @@
+GET 
+
+    (getting all words presents in the DATABASE)
+    Word.objects.all() -> for getting all the databases rows
+    WordSerializer(words , many = True) -> convert rows into dataObject
+    return that data
+
+    request -> {
+        
+    }
+
+    response -> [
+        {
+            "title": "aarzu",
+            "id": 232
+        },
+        {
+
+        },
+        ...
+    ]
+
+
+
+POST
+
+    (add a word inside data)
+    request -> {
+        "title" : "that will be shown to the user",
+        "title_algo" : "that will help algorithm",
+        "category" : "from category table"
+    }
+
+    response -> {
+        status
+    }
+
+    

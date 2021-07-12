@@ -4,7 +4,7 @@ from .models import Word,Voice
 class WordSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Word
-        fields = ['title', 'id']
+        fields = ['title_algo', 'title_show', 'id']
 
 class VoiceSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

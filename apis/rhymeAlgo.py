@@ -1,5 +1,39 @@
 vowels_set = {'aey','aa', 'ee', 'oo', 'ai', 'ae', 'au', 'a', 'e' , 'i', 'o' ,'u'}
 
+# make equality b/w 'oo' and 'u'
+
+example_word = ["Rakhta",
+"Sabka",
+"Mereko",
+"sarkaar",
+"savaal",
+"mukadma",
+"desh",
+"drohi",
+"thokenge",
+"patrakaar",
+"sthan",
+"Antaraashtriya",
+"antyeshti",
+"vilambit",
+"keemat",
+"deemak",
+"arthvyavastha",
+"taansen",
+"namcheen",
+"garje",
+"kranti",
+"bandobast",
+"paudhe",
+"maarpeet",
+"narbhaksh",
+"karkash",
+"rakshas",
+"shanichar",
+"khushiya",
+"manticore"
+]
+
 def isContainsAnyVowel(word):
     for e in vowels_set:
         if e in word:
@@ -15,12 +49,17 @@ def clean(word):
 
 
 def findRhyme(word, ansPrefix):
+
+    # if word is '' then we remove last '-' if it presents
     if word == '':
         return clean(ansPrefix)
 
+    # if word does'nt contains any vowels from vowels_set then we just add 'a'
+    # in place of word and return it
     if not isContainsAnyVowel(word = word):
         return ansPrefix + 'a'
     
+
     if not (word[0] in vowels_set):
         if not (word[1] in vowels_set) and word[1] != 'h':
             if not (word[2] in vowels_set) and word[2] != 'h': 
@@ -45,6 +84,10 @@ def rhymeOf(word):
     word = word.lower()
     rhymePattern = findRhyme(word = word, ansPrefix = '')
     return rhymePattern
+
+def test():
+    for word in example_word:
+        print(word, " -> ", rhymeOf(word))
 
 
 #algo

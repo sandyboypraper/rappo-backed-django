@@ -22,14 +22,19 @@ class Category(models.Model):
 
 
 class Word(models.Model):
-    title = models.CharField(max_length=30, unique=True)
+    title_algo = models.CharField(max_length=30, unique=True)
     voice = models.ForeignKey(Voice, on_delete = models.SET_NULL, default=1, null=True)
     category = models.ForeignKey(Category, on_delete = models.SET_NULL, null=True)
-    show_title = models.CharField(max_length=30, default="")
+    title_show = models.CharField(max_length=30, default="")
 
     def __str__(self):
-        return self.title
+        return self.title_show
+    
+    def save(self, *args, **kwargs):
+        if not self.title_show:
+            self.title_show = self.title_algo
+        super(Word, self).save(*args, **kwargs)
 
     class Meta:
-        ordering = ['title']
+        ordering = ['title_show']
 

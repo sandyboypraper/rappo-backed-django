@@ -5,5 +5,6 @@ urlpatterns = [
     path('words/', word),
     path('process-lyrics/', lyrics),
     path('find-rhymes/', findRhymings),
-    path('recycle-words/', recycleWords)
+    path('recycle-words/', recycleWords),
+    path('delete-words/', deleteWords)
 ]
