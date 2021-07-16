@@ -1,25 +1,6 @@
 from django.db import models
-
-class Voice(models.Model):
-    v_title = models.CharField(max_length=30, unique=True)
-
-    def __str__(self):
-        return self.v_title
-
-    class Meta:
-        ordering = ['v_title']
-
-
-class Category(models.Model):
-    category_title = models.CharField(max_length=30, unique=True)
-
-    def __str__(self):
-        return self.category_title
-    
-    class Meta:
-        ordering = ['category_title']
-
-
+from .Voice import *
+from .Category import *
 
 class Word(models.Model):
     title_algo = models.CharField(max_length=30, unique=True)
@@ -31,10 +12,12 @@ class Word(models.Model):
         return self.title_show
     
     def save(self, *args, **kwargs):
-        if not self.title_show:
+        if not self.title_show or self.title_show == "":
+            print("YES")
             self.title_show = self.title_algo
+        else:
+            print("NO")
         super(Word, self).save(*args, **kwargs)
 
     class Meta:
         ordering = ['title_show']
-

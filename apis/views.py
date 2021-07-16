@@ -1,10 +1,16 @@
 from rest_framework.decorators import api_view
 from rest_framework import status
 from rest_framework.response import Response
-from .models import Word, Voice, Category
+
+from apis.models.Category import *
+from apis.models.Voice import *
+from apis.models.Word import *
+
 from .serializers import WordSerializer, VoiceSerializer
-from .rhymeAlgo import rhymeOf
-from .utils import filterMatchedVoices
+from apis.utils.phoneticAlgo import phoneticsOf
+from apis.utils.rhymeFilterAndSort import filterMatchedVoices
+
+from apis.const.RhymeType import RhymeType
 
 from django.db import utils
 
@@ -27,7 +33,7 @@ def word(request):
             word_request_data = request.data
             
             # important for algorithm
-            v_title_algo = rhymeOf(word_request_data["title_algo"])
+            v_title_algo = phoneticsOf(word_request_data["title_algo"])
 
             # Only for show
             title_show = word_request_data["title_show"]
@@ -52,15 +58,18 @@ def word(request):
 def lyrics(request):
     try:
         lyrics_request_data = request.data
-        splitBySpace = set(lyrics_request_data["lyrics"].split(" "))
+        splitBy = lyrics_request_data["split-by"] or " "
+        splited = set(lyrics_request_data["lyrics"].split(splitBy))
         words = []
-        for word in splitBySpace:
+        for word in splited:
+            print(word)
             if len(word) >= 4:
-                v_title_algo = rhymeOf(word)
+                v_title_algo = phoneticsOf(word)
                 try:
-                    words.append(Word(title_algo = word.lower(), voice = Voice.objects.get_or_create(v_title = v_title_algo)[0]))
+                    words.append(Word(title_algo = word.lower(), voice = Voice.objects.get_or_create(v_title = v_title_algo)[0], title_show = word.lower()))
                 except Exception:
                     pass
+        print(words)
         Word.objects.bulk_create(words, ignore_conflicts=True)
         return Response(data = {"status" : 200}, status = status.HTTP_201_CREATED)
     except IntegrityError as e:
@@ -78,9 +87,11 @@ def findRhymings(request):
         word = request.data["word"]
         level = request.data["level"]
         is_add_to_db = request.data["is_add_to_db"] or False
-        sort_type = request.data["sort_type"] or 1
 
-        voice_of_word = rhymeOf(word)
+        # introduce enum here
+        rhyme_type = RhymeType(request.data["rhyme_type"]) or RhymeType.RHYME_BY_LAST
+
+        voice_of_word = phoneticsOf(word)
         voice_obj = Voice.objects.get_or_create(v_title = voice_of_word)[0]
 
         if is_add_to_db:
@@ -90,7 +101,7 @@ def findRhymings(request):
                 pass
         
         all_voices = VoiceSerializer(Voice.objects.all(), many = True).data
-        all_matched_voices = filterMatchedVoices(voices = all_voices, voice = voice_of_word, level = level, sort_type = sort_type)
+        all_matched_voices = filterMatchedVoices(voices = all_voices, voice = voice_of_word, level = level, rhyme_type = rhyme_type)
         final_word_list = []
         for voice_item in all_matched_voices:
             words_list = Word.objects.filter(voice = voice_item["id"])
@@ -112,7 +123,7 @@ def recycleWords(request):
     try:
         all_words = WordSerializer(Word.objects.all(), many = True).data
         for word in all_words:
-            v_title_of_word = rhymeOf(word["title_algo"])
+            v_title_of_word = phoneticsOf(word["title_algo"])
             voice = Voice.objects.get_or_create(v_title = v_title_of_word)[0]
             Word.objects.filter(id=word["id"]).update(voice = voice)
         return Response(data = {"status" : 200}, status = status.HTTP_200_OK)

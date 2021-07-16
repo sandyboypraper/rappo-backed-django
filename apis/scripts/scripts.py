@@ -1,5 +1,5 @@
-from .models import Word
-from .serializers import WordSerializer
+from apis.models import Word
+from apis.serializers import WordSerializer
 
 def copyTitleAlgoToTileShow():
     words_query_set = Word.objects.all()

@@ -1,5 +1,8 @@
 from rest_framework import serializers
-from .models import Word,Voice
+from apis.models.Voice import *
+from apis.models.Category import *
+from apis.models.Word import *
+
 
 class WordSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:

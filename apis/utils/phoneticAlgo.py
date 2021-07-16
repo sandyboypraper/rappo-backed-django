@@ -48,7 +48,7 @@ def clean(word):
         return word
 
 
-def findRhyme(word, ansPrefix):
+def findPhonetics(word, ansPrefix):
 
     # if word is '' then we remove last '-' if it presents
     if word == '':
@@ -63,31 +63,31 @@ def findRhyme(word, ansPrefix):
     if not (word[0] in vowels_set):
         if not (word[1] in vowels_set) and word[1] != 'h':
             if not (word[2] in vowels_set) and word[2] != 'h': 
-                return findRhyme(word = word[3:],ansPrefix = ansPrefix + 'a-')
+                return findPhonetics(word = word[3:],ansPrefix = ansPrefix + 'a-')
             else:
-                return findRhyme(word = word[2:],ansPrefix = ansPrefix + '^-')
-        return findRhyme(word = word[1:],ansPrefix = ansPrefix)
+                return findPhonetics(word = word[2:],ansPrefix = ansPrefix + '^-')
+        return findPhonetics(word = word[1:],ansPrefix = ansPrefix)
     else:
         #case for last a;
         if len(word) == 1 and word[0] == 'a':
-            return findRhyme(word = word[1:], ansPrefix = ansPrefix + word[0] + 'a')
+            return findPhonetics(word = word[1:], ansPrefix = ansPrefix + word[0] + 'a')
         if (word[0:2] in vowels_set):
             if(word[0:3] in vowels_set):
-                return findRhyme(word = word[3:], ansPrefix = ansPrefix + word[0:3] + '-')
+                return findPhonetics(word = word[3:], ansPrefix = ansPrefix + word[0:3] + '-')
             else:
-                return findRhyme(word = word[2:], ansPrefix = ansPrefix + word[0:2] + '-')
+                return findPhonetics(word = word[2:], ansPrefix = ansPrefix + word[0:2] + '-')
         else:
-            return findRhyme(word = word[1:], ansPrefix = ansPrefix + word[0] + '-')
+            return findPhonetics(word = word[1:], ansPrefix = ansPrefix + word[0] + '-')
 
 
-def rhymeOf(word):
+def phoneticsOf(word):
     word = word.lower()
-    rhymePattern = findRhyme(word = word, ansPrefix = '')
+    rhymePattern = findPhonetics(word = word, ansPrefix = '')
     return rhymePattern
 
 def test():
     for word in example_word:
-        print(word, " -> ", rhymeOf(word))
+        print(word, " -> ", phoneticsOf(word))
 
 
 #algo

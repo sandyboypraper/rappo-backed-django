@@ -1,3 +1,5 @@
+from apis.const.RhymeType import RhymeType
+
 # compare suffixes
 def typeOneScore(word_a, word_b):
     score = 0
@@ -56,16 +58,16 @@ def typeTwoScore(word_a, word_b):
 
 def score(word_a, word_b, type = 1):
     ans = 0
-    if type == 1:
+    if type == RhymeType.RHYME_BY_LAST:
         ans = typeOneScore(word_a, word_b)
-    if type == 2:
+    if type == RhymeType.RHYME_BY_SUBSTRING:
         ans = typeTwoScore(word_a, word_b)
     return ans
 
 
 # get voices which are matched with voice at least with <level> characters
-def filterMatchedVoices(voices, voice, level = 2, sort_type = 1):
+def filterMatchedVoices(voices, voice, level = 2, rhyme_type = RhymeType.RHYME_BY_LAST):
     level = min(level, len(voice)/2)
-    a = sorted(voices, key = lambda elem: score(word_a = voice, word_b = elem["v_title"], type = sort_type),reverse=True)
-    a_filtered = list(filter(lambda elem: score(word_a = voice, word_b = elem["v_title"], type = sort_type) >= level, a))
+    a = sorted(voices, key = lambda elem: score(word_a = voice, word_b = elem["v_title"], type = rhyme_type),reverse=True)
+    a_filtered = list(filter(lambda elem: score(word_a = voice, word_b = elem["v_title"], type = rhyme_type) >= level, a))
     return a_filtered

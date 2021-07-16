@@ -1,5 +1,9 @@
 from django.contrib import admin
-from .models import Word, Voice, Category
+
+from apis.models.Word import *
+from apis.models.Voice import *
+from apis.models.Category import *
+
 
 class ForId(admin.ModelAdmin):
     readonly_fields = ('id',)
