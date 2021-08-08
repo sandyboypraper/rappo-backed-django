@@ -85,6 +85,9 @@ def phoneticsOf(word):
     rhymePattern = findPhonetics(word = word, ansPrefix = '')
     return rhymePattern
 
+def phoneticsOf_array(words):
+    return map(lambda word: phoneticsOf(word), words)
+
 def test():
     for word in example_word:
         print(word, " -> ", phoneticsOf(word))

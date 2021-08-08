@@ -3,8 +3,8 @@ from .Voice import *
 from .Category import *
 
 class Word(models.Model):
-    title_algo = models.CharField(max_length=30, unique=True)
-    voice = models.ForeignKey(Voice, on_delete = models.SET_NULL, default=1, null=True)
+    titles_algo = models.CharField(max_length=30, unique=True)
+    voices = models.ManyToManyField(Voice)
     category = models.ForeignKey(Category, on_delete = models.SET_NULL, null=True)
     title_show = models.CharField(max_length=30, default="")
 
