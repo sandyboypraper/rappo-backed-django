@@ -6,11 +6,17 @@ from apis.models.Category import *
 from apis.models.Voice import *
 from apis.models.Word import *
 
+# utils
 from .serializers import WordSerializer, VoiceSerializer
 from apis.utils.phoneticAlgo import phoneticsOf, phoneticsOf_array
 from apis.utils.rhymeFilterAndSort import filterMatchedVoices
+from apis.utils.viewUtils.wordViewUtils import convertTitlesToVoices, wordViewDataReader
+from apis.utils.modelUtils.CategoryUtils import convertCategoriesToObjs
+from apis.utils.modelUtils.VoiceUtils import convertVoicesToObjs
 
+# const
 from apis.const.RhymeType import RhymeType
+from apis.const.WordView import WordViewRequestDataKeys
 
 from django.db import utils
 
@@ -35,27 +41,24 @@ def word(request):
             word_request_data = request.data
 
             # Only for show
-            title_show = word_request_data["title_show"]
+            titles_for_algo, category_names, title_for_show = wordViewDataReader(word_request_data)
             
-            # important for algorithm
-            v_titles_algo = []
-            titles_algo = json.loads(word_request_data['titles_algo'])
+            voices_of_titles = convertTitlesToVoices(title_for_show, titles_for_algo)
+            print(voices_of_titles)
 
-            if len(titles_algo) == 0:
-                v_titles_algo = [phoneticsOf(title_show)]
-            else:
-                v_titles_algo = phoneticsOf_array(titles_algo)
+            category_names_objects = convertCategoriesToObjs(category_names)
+            voices_of_titles_objects = convertVoicesToObjs(voices_of_titles)
 
-            category_name = word_request_data["category"]
-            category = Category.objects.get_or_create(category_title = category_name)[0]
+            new_word_obj = Word(titles_for_algo = titles_for_algo, title_for_show = title_for_show)
 
-            new_word_obj = Word(titles_algo = word_request_data['titles_algo'], category = category, title_show = title_show)
-
-            for v_title_algo in v_titles_algo:
-                voice = Voice.objects.get_or_create(v_title = v_title_algo)[0]
-                new_word_obj.voices.add(voice)
-            
             new_word_obj.save()
+
+            for category_name_object in category_names_objects:
+                new_word_obj.category_names.add(category_name_object)
+
+            for voice_of_title_object in voices_of_titles_objects:
+                new_word_obj.voices.add(voice_of_title_object)
+            
             return Response(data = {"status" : 200}, status = status.HTTP_201_CREATED)
         except IntegrityError as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()
