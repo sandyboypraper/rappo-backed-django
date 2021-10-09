@@ -11,6 +11,7 @@ from .serializers import WordSerializer, VoiceSerializer
 from apis.utils.phoneticAlgo import phoneticsOf, phoneticsOf_array
 from apis.utils.rhymeFilterAndSort import filterMatchedVoices
 from apis.utils.viewUtils.wordViewUtils import convertTitlesToVoices, wordViewDataReader
+from apis.utils.viewUtils.findRhymingUtils import findRhymingDataReader, convertToJsonArray
 from apis.utils.modelUtils.CategoryUtils import convertCategoriesToObjs
 from apis.utils.modelUtils.VoiceUtils import convertVoicesToObjs
 
@@ -49,7 +50,7 @@ def word(request):
             category_names_objects = convertCategoriesToObjs(category_names)
             voices_of_titles_objects = convertVoicesToObjs(voices_of_titles)
 
-            new_word_obj = Word(titles_for_algo = titles_for_algo, title_for_show = title_for_show)
+            new_word_obj = Word(titles_for_algo = json.dumps(titles_for_algo), title_for_show = title_for_show)
 
             new_word_obj.save()
 
@@ -86,7 +87,6 @@ def lyrics(request):
                     words.append(Word(title_algo = word.lower(), voice = Voice.objects.get_or_create(v_title = v_title_algo)[0], title_show = word.lower()))
                 except Exception:
                     pass
-        print(words)
         Word.objects.bulk_create(words, ignore_conflicts=True)
         return Response(data = {"status" : 200}, status = status.HTTP_201_CREATED)
     except IntegrityError as e:
@@ -105,30 +105,29 @@ def lyrics(request):
 @api_view(['POST'])
 def findRhymings(request):
     try:
-        word = request.data["word"]
-        level = request.data["level"]
-        is_add_to_db = request.data["is_add_to_db"] or False
+        print(request.data)
+        word, level_of_rhyme, is_add_to_db = findRhymingDataReader(request.data)
 
-        # introduce enum here
         rhyme_type = RhymeType(request.data["rhyme_type"]) or RhymeType.RHYME_BY_LAST
 
         voice_of_word = phoneticsOf(word)
         voice_obj = Voice.objects.get_or_create(v_title = voice_of_word)[0]
 
-        if is_add_to_db:
-            try:
-                Word.objects.create(title_algo = word, voice = voice_obj)
-            except:
-                pass
+        # if is_add_to_db:
+        #     try:
+        #         new_word = Word.objects.create(titles_for_algo = convertToJsonArray(word))
+        #         new_word.voices.add(voice_obj)
+        #     except:
+        #         pass
         
         all_voices = VoiceSerializer(Voice.objects.all(), many = True).data
-        all_matched_voices = filterMatchedVoices(voices = all_voices, voice = voice_of_word, level = level, rhyme_type = rhyme_type)
+        all_matched_voices = filterMatchedVoices(voices = all_voices, voice = voice_of_word, level = level_of_rhyme, rhyme_type = rhyme_type)
         final_word_list = []
         for voice_item in all_matched_voices:
-            words_list = Word.objects.filter(voice = voice_item["id"])
+            words_list = Word.objects.filter(voices__id = voice_item["id"])
             word_serializer = WordSerializer(words_list, many = True)
             word_serializer_only_title_show = map(lambda obj : {
-                "title_show" : obj["title_show"],
+                "title_show" : obj["title_for_show"],
                 "id" : obj["id"]
             }, word_serializer.data)
             final_word_list.append(word_serializer_only_title_show)
@@ -143,11 +142,15 @@ def findRhymings(request):
 @api_view(['POST'])
 def recycleWords(request):
     try:
-        all_words = WordSerializer(Word.objects.all(), many = True).data
-        for word in all_words:
-            v_title_of_word = phoneticsOf(word["title_algo"])
-            voice = Voice.objects.get_or_create(v_title = v_title_of_word)[0]
-            Word.objects.filter(id=word["id"]).update(voice = voice)
+        all_words_set = Word.objects.all()
+        print(all_words_set)
+        for word in all_words_set:
+            v_titles_of_word = phoneticsOf_array(json.loads(word.titles_for_algo))
+            for voice in word.voices.all():
+                word.voices.remove(voice)
+            print(v_titles_of_word)
+            for v_title_object in convertVoicesToObjs(v_titles_of_word):
+                word.voices.add(v_title_object)
         return Response(data = {"status" : 200}, status = status.HTTP_200_OK)
     except Exception as e:
             exc_type, exc_obj, exc_tb = sys.exc_info()

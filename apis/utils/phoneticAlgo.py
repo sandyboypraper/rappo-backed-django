@@ -1,3 +1,5 @@
+import json
+
 vowels_set = {'aey','aa', 'ee', 'oo', 'ai', 'ae', 'au', 'a', 'e' , 'i', 'o' ,'u'}
 
 # make equality b/w 'oo' and 'u'
@@ -86,7 +88,10 @@ def phoneticsOf(word):
     return rhymePattern
 
 def phoneticsOf_array(words):
-    return map(lambda word: phoneticsOf(word), words)
+    result = []
+    for word in words:
+        result.append(phoneticsOf(word))
+    return result
 
 def test():
     for word in example_word:

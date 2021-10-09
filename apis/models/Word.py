@@ -3,7 +3,9 @@ from .Voice import *
 from .Category import *
 
 class Word(models.Model):
+    # Json string of array which matches to voices
     titles_for_algo = models.CharField(max_length=300, unique=True)
+    
     voices = models.ManyToManyField(Voice)
     category_names = models.ManyToManyField(Category)
     title_for_show = models.CharField(max_length=30, default="")
